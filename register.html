@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration & Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .toggle-btn {
+            background-color: #007bff;
+            margin-top: 10px;
+        }
+        .toggle-btn:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 id="formTitle">User Registration</h2>
+        <form id="userForm" autocomplete="off">
+            <input type="text" id="username" placeholder="Username" autocomplete="new-username" required>
+            <input type="email" id="email" placeholder="Email" autocomplete="email" required>
+            <input type="password" id="password" placeholder="Password" autocomplete="new-password" required>
+            <button type="submit">Register</button>
+        </form>
+        <p id="message"></p>
+        <button class="toggle-btn" onclick="toggleForm()">Switch to Login</button>
+    </div>
+
+    <script>
+        let isRegistering = true;
+
+        function toggleForm() {
+            isRegistering = !isRegistering;
+            document.getElementById('formTitle').textContent = isRegistering ? "User Registration" : "User Login";
+            document.querySelector('button[type="submit"]').textContent = isRegistering ? "Register" : "Login";
+            
+            const usernameField = document.getElementById('username');
+            if (isRegistering) {
+                usernameField.classList.remove('hidden');
+                usernameField.setAttribute("required", "true"); // Required for registration
+                usernameField.setAttribute("autocomplete", "new-username"); // Prevents autofill
+            } else {
+                usernameField.classList.add('hidden');
+                usernameField.removeAttribute("required"); // Not required for login
+            }
+            document.querySelector('.toggle-btn').textContent = isRegistering ? "Switch to Login" : "Switch to Register";
+        }
+
+        document.getElementById('userForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+
+            let endpoint = isRegistering ? '/register' : '/login';
+            let data = isRegistering ? { username, email, password } : { email, password };
+
+            console.log("Submitting to:", endpoint, "Data:", data); // Debugging
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log("Response:", result); // Debugging response from the server
+
+                document.getElementById('message').textContent = result.message;
+
+                if (response.ok && !isRegistering) {
+                    alert('Login successful!');
+                    window.location.href = "/"; // Redirect after login
+                }
+            } catch (error) {
+                console.error("Error during fetch:", error);
+                document.getElementById('message').textContent = "An error occurred. Please try again.";
+            }
+        });
+    </script>
+
+</body>
+</html>
